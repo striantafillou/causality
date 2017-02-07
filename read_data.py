@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 import os
 import pickle
@@ -11,7 +11,6 @@ import datetime, time
 
 data_dir = '/data/CS120/'
 subjects = os.listdir(data_dir)
-# subjects.remove('.dropbox')
 # subjects = subjects[:2]
 
 timezones = pd.read_csv('../CS120/general/timezones.csv',sep='\t',header=None)
@@ -97,9 +96,4 @@ for (i,_) in enumerate(subjects):
 with open('data.dat','w') as f:
     pickle.dump(data, f)
 f.close()
-
-
-# In[ ]:
-
-i
 
