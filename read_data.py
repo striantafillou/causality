@@ -97,3 +97,17 @@ with open('data.dat','w') as f:
     pickle.dump(data, f)
 f.close()
 
+
+# In[11]:
+
+data[0]
+    
+
+
+# In[9]:
+
+import matplotlib.pyplot as plt
+get_ipython().magic(u'matplotlib inline')
+
+plt.hist(n,bins=20)
+
