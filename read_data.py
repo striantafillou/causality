@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[16]:
 
 import os
 import pickle
@@ -23,7 +23,7 @@ emss = []
 
 for subj in subjects:
     
-    print subj
+    print subj,
     
     act = pd.DataFrame(columns=['date','act'])
     if os.path.exists(data_dir+subj+'/act.csv'):
@@ -48,7 +48,9 @@ for subj in subjects:
         ema['date'] = np.arange(data.loc[0,0],data.loc[data.shape[0]-1,0])
         for (i,da) in enumerate(ema['date']):
             ema.loc[i,'stress'] = np.nanmean(data.loc[data[0]==da,1])
-            ema.loc[i,'mood'] = np.nanmean(data.loc[data[0]==da,2])
+            moods = data.loc[data[0]==da,2]
+            #moods = moods[1:]
+            ema.loc[i,'mood'] = np.nanmean(moods)
             ema.loc[i,'energy'] = np.nanmean(data.loc[data[0]==da,3])
             ema.loc[i,'focus'] = np.nanmean(data.loc[data[0]==da,4])
     else:
@@ -76,38 +78,44 @@ for subj in subjects:
 # aligning the data
 data = []
 for (i,_) in enumerate(subjects):
+    
     a = pd.merge(emas[i],emss[i],on='date',how='outer')
     a = pd.merge(a,acts[i],on='date',how='outer')
     
-    # delayed version
+    # delayed (-1)
     emas[i]['date'] += 1
     emss[i]['date'] += 1
     acts[i]['date'] += 1
     emas[i].columns = ['date','stress_prev','mood_prev','energy_prev','focus_prev']
     emss[i].columns = ['date','duration_prev','quality_prev','daytype_prev']
     acts[i].columns = ['date','act_prev']
-    
     a = pd.merge(a,emas[i],on='date',how='outer')
     a = pd.merge(a,emss[i],on='date',how='outer')
     a = pd.merge(a,acts[i],on='date',how='outer')
+    
+    # removing extra columns
+    emas[i] = emas[i].drop(['stress_prev','energy_prev','focus_prev'], axis=1)
+    emss[i] = emss[i].drop(['duration_prev','daytype_prev'], axis=1)
+    
+    # delayed (-2)
+    emas[i]['date'] += 1
+    emss[i]['date'] += 1
+    emas[i].columns = ['date','mood_prev2']
+    emss[i].columns = ['date','quality_prev2']
+    a = pd.merge(a,emas[i],on='date',how='outer')
+    a = pd.merge(a,emss[i],on='date',how='outer')
+    
+    # delayed (-3)
+    emas[i]['date'] += 1
+    emss[i]['date'] += 1
+    emas[i].columns = ['date','mood_prev3']
+    emss[i].columns = ['date','quality_prev3']
+    a = pd.merge(a,emas[i],on='date',how='outer')
+    a = pd.merge(a,emss[i],on='date',how='outer')
     
     data.append(a)
     
 with open('data.dat','w') as f:
     pickle.dump(data, f)
 f.close()
-
-
-# In[11]:
-
-data[0]
-    
-
-
-# In[9]:
-
-import matplotlib.pyplot as plt
-get_ipython().magic(u'matplotlib inline')
-
-plt.hist(n,bins=20)
 

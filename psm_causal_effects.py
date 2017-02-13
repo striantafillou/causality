@@ -10,7 +10,11 @@ def psm_causal_effects(treatment, outcome, confound, graph=0, scorefun='replacem
     
     if treatment.size<20:
 #         print 'too few samples!'
-        return []
+        return np.nan
+
+    if np.var(treatment)==0:
+        print 'treatment has no variability'
+        return np.nan
 
     #binarizing the treatment
     treatment = 0*(treatment < np.mean(treatment)) + 1*(treatment >= np.mean(treatment))
@@ -57,5 +61,9 @@ def psm_causal_effects(treatment, outcome, confound, graph=0, scorefun='replacem
                 temp.remove(ind_control[ind])
                 ind_control = np.array(temp, dtype=int)
 
-    return np.mean(outcome[ind_matched_case])-np.mean(outcome[ind_matched_control])
+    std_pooled = np.var(outcome[ind_matched_case])*(ind_matched_case.size-1) + np.var(outcome[ind_matched_control])*(ind_matched_control.size-1)
+    std_pooled /= (ind_matched_case.size+ind_matched_control.size-2)
+    std_pooled = np.sqrt(std_pooled)
+    
+    return (np.mean(outcome[ind_matched_case])-np.mean(outcome[ind_matched_control]))/std_pooled
 
