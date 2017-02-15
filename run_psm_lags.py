@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[3]:
+# In[5]:
 
 import pickle
 import pandas as pd
@@ -13,7 +13,7 @@ with open('data_clean.dat') as f:
     data = pickle.load(f)
 f.close()
 
-n_boot = 10
+n_boot = 100
 
 ind_set = range(len(data))
 
@@ -52,7 +52,7 @@ for k in range(n_boot):
         # mood on sleep - lag 3
         treatment = np.array(data[i]['mood_prev'])
         outcome = np.array(data[i]['quality'])
-        confound = np.array(pd.concat([data[i]['act_prev'],data[i]['stress_prev'],data[i]['energy_prev'],data[i]['daytype'],                                      data[i]['mood_prev2'],data[i]['quality_prev'],data[i]['mood_prev3'],data[i]['quality_prev2'],data[i]['quality_prev3']],axis=1))
+        confound = np.array(pd.concat([data[i]['act_prev'],data[i]['stress_prev'],data[i]['energy_prev'],data[i]['daytype'],                                      data[i]['mood_prev2'],data[i]['quality_prev'],data[i]['mood_prev3'],data[i]['quality_prev2'],data[i]['mood_prev4'],data[i]['quality_prev3']],axis=1))
         es_m2s[c,3] = psm_causal_effects(treatment=treatment, outcome=outcome, confound=confound, scorefun='replacement')
         
         # sleep on mood - lag 0
@@ -84,30 +84,15 @@ for k in range(n_boot):
     
 
 
-# In[2]:
+# In[20]:
 
 import matplotlib.pyplot as plt
 get_ipython().magic(u'matplotlib inline')
-plt.figure(figsize=(8,3))
+plt.figure(figsize=(6,3))
 plt.barh([0.75,1.75,2.75,3.75],np.mean(es_m2s_mean,axis=0),xerr=np.array([    [np.mean(es_m2s_mean[:,0])-np.percentile(es_m2s_mean[:,0],2.5),np.percentile(es_m2s_mean[:,0],97.5)-np.mean(es_m2s_mean[:,0])],    [np.mean(es_m2s_mean[:,1])-np.percentile(es_m2s_mean[:,1],2.5),np.percentile(es_m2s_mean[:,1],97.5)-np.mean(es_m2s_mean[:,1])],    [np.mean(es_m2s_mean[:,2])-np.percentile(es_m2s_mean[:,2],2.5),np.percentile(es_m2s_mean[:,2],97.5)-np.mean(es_m2s_mean[:,2])],    [np.mean(es_m2s_mean[:,3])-np.percentile(es_m2s_mean[:,3],2.5),np.percentile(es_m2s_mean[:,3],97.5)-np.mean(es_m2s_mean[:,3])]]).reshape(2,4),    ecolor=(0,0,0),height=.25,color=(.5,.5,1))
 plt.barh([1,2,3,4],np.mean(es_s2m_mean,axis=0),xerr=np.array([    [np.mean(es_s2m_mean[:,0])-np.percentile(es_s2m_mean[:,0],2.5),np.percentile(es_s2m_mean[:,0],97.5)-np.mean(es_s2m_mean[:,0])],    [np.mean(es_s2m_mean[:,1])-np.percentile(es_s2m_mean[:,1],2.5),np.percentile(es_s2m_mean[:,1],97.5)-np.mean(es_s2m_mean[:,1])],    [np.mean(es_s2m_mean[:,2])-np.percentile(es_s2m_mean[:,2],2.5),np.percentile(es_s2m_mean[:,2],97.5)-np.mean(es_s2m_mean[:,2])],    [np.mean(es_s2m_mean[:,3])-np.percentile(es_s2m_mean[:,3],2.5),np.percentile(es_s2m_mean[:,3],97.5)-np.mean(es_s2m_mean[:,3])]]).reshape(2,4),    ecolor=(0,0,0),height=.25,color=(.5,1,.5))
-plt.xlim([-.1,1])
-# plt.ylim([0,3])
-plt.yticks([1,2,3,4],['lag 0','lag 1','lag 2','lag 3'],rotation=0);
+plt.xlim([-.05,1])
+plt.yticks([1,2,3,4],['lag 0','lag 0,1','lag 0,1,2','lag 0,1,2,3'],rotation=0);
 plt.xlabel('Average Effect Size')
-plt.legend(['mood on sleep','sleep on mood'],loc='upper right');
-
-
-# In[4]:
-
-import matplotlib.pyplot as plt
-get_ipython().magic(u'matplotlib inline')
-plt.figure(figsize=(8,3))
-plt.barh([0.75,1.75,2.75,3.75],np.mean(es_m2s_mean,axis=0),xerr=np.array([    [np.mean(es_m2s_mean[:,0])-np.percentile(es_m2s_mean[:,0],2.5),np.percentile(es_m2s_mean[:,0],97.5)-np.mean(es_m2s_mean[:,0])],    [np.mean(es_m2s_mean[:,1])-np.percentile(es_m2s_mean[:,1],2.5),np.percentile(es_m2s_mean[:,1],97.5)-np.mean(es_m2s_mean[:,1])],    [np.mean(es_m2s_mean[:,2])-np.percentile(es_m2s_mean[:,2],2.5),np.percentile(es_m2s_mean[:,2],97.5)-np.mean(es_m2s_mean[:,2])],    [np.mean(es_m2s_mean[:,3])-np.percentile(es_m2s_mean[:,3],2.5),np.percentile(es_m2s_mean[:,3],97.5)-np.mean(es_m2s_mean[:,3])]]).reshape(2,4),    ecolor=(0,0,0),height=.25,color=(.5,.5,1))
-plt.barh([1,2,3,4],np.mean(es_s2m_mean,axis=0),xerr=np.array([    [np.mean(es_s2m_mean[:,0])-np.percentile(es_s2m_mean[:,0],2.5),np.percentile(es_s2m_mean[:,0],97.5)-np.mean(es_s2m_mean[:,0])],    [np.mean(es_s2m_mean[:,1])-np.percentile(es_s2m_mean[:,1],2.5),np.percentile(es_s2m_mean[:,1],97.5)-np.mean(es_s2m_mean[:,1])],    [np.mean(es_s2m_mean[:,2])-np.percentile(es_s2m_mean[:,2],2.5),np.percentile(es_s2m_mean[:,2],97.5)-np.mean(es_s2m_mean[:,2])],    [np.mean(es_s2m_mean[:,3])-np.percentile(es_s2m_mean[:,3],2.5),np.percentile(es_s2m_mean[:,3],97.5)-np.mean(es_s2m_mean[:,3])]]).reshape(2,4),    ecolor=(0,0,0),height=.25,color=(.5,1,.5))
-plt.xlim([-.1,1])
-# plt.ylim([0,3])
-plt.yticks([1,2,3,4],['lag 0','lag 1','lag 2','lag 3'],rotation=0);
-plt.xlabel('Average Effect Size')
-plt.legend(['mood on sleep','sleep on mood'],loc='upper right');
+plt.legend(['Mood on Sleep Quality','Sleep Quality on Mood'],loc='upper right',bbox_to_anchor=(1.3, 1.05), fontsize=10);
 

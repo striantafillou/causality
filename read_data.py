@@ -1,7 +1,17 @@
 
 # coding: utf-8
 
-# In[16]:
+# In[17]:
+
+def daytype2number(x):
+    return {
+        'normal': 0,
+        'partial': 1,
+        'off': 2,
+    }[x]
+
+
+# In[18]:
 
 import os
 import pickle
@@ -25,7 +35,7 @@ for subj in subjects:
     
     print subj,
     
-    act = pd.DataFrame(columns=['date','act'])
+    act = pd.DataFrame(columns=['date','act'], dtype=float)
     if os.path.exists(data_dir+subj+'/act.csv'):
         data = pd.read_csv(data_dir+subj+'/act.csv',sep='\t',header=None)
         # convert timestamps to daystamps
@@ -38,8 +48,7 @@ for subj in subjects:
         print ' no act data'
     acts.append(act)
 
-
-    ema = pd.DataFrame(columns=['date','stress','mood','energy','focus'])
+    ema = pd.DataFrame(columns=['date','stress','mood','energy','focus'], dtype=float)
     if os.path.exists(data_dir+subj+'/emm.csv'):
         data = pd.read_csv(data_dir+subj+'/emm.csv',sep='\t',header=None)
         # convert timestamps to daystamps
@@ -49,7 +58,6 @@ for subj in subjects:
         for (i,da) in enumerate(ema['date']):
             ema.loc[i,'stress'] = np.nanmean(data.loc[data[0]==da,1])
             moods = data.loc[data[0]==da,2]
-            #moods = moods[1:]
             ema.loc[i,'mood'] = np.nanmean(moods)
             ema.loc[i,'energy'] = np.nanmean(data.loc[data[0]==da,3])
             ema.loc[i,'focus'] = np.nanmean(data.loc[data[0]==da,4])
@@ -57,7 +65,7 @@ for subj in subjects:
         print ' no ema data'
     emas.append(ema)
         
-    ems = pd.DataFrame(columns=['date','duration','quality','daytype'])
+    ems = pd.DataFrame(columns=['date','duration','quality','daytype'], dtype=float)
     if os.path.exists(data_dir+subj+'/ems.csv'):
         data = pd.read_csv(data_dir+subj+'/ems.csv',sep='\t',header=None)
         # convert timestamps to daystamps
@@ -67,8 +75,9 @@ for subj in subjects:
         for (i,da) in enumerate(ems['date']):
             ems.loc[i,'duration'] = np.nanmean(data.loc[data[0]==da,3]-data.loc[data[0]==da,2])/1000.0
             ems.loc[i,'quality'] = np.nanmean(data.loc[data[0]==da,5])
-            if data.loc[data[0]==da,6].size>0:
-                ems.loc[i,'daytype'] = data.loc[data[0]==da,6].values[0]
+            daytype = data.loc[data[0]==da,6]
+            if daytype.size>0:
+                ems.loc[i,'daytype'] = daytype2number(daytype.values[0])
             else:
                 ems.loc[i,'daytype'] = np.nan
     else:
@@ -112,6 +121,11 @@ for (i,_) in enumerate(subjects):
     emss[i].columns = ['date','quality_prev3']
     a = pd.merge(a,emas[i],on='date',how='outer')
     a = pd.merge(a,emss[i],on='date',how='outer')
+
+    # delayed (-4) - for mood only
+    emas[i]['date'] += 1
+    emas[i].columns = ['date','mood_prev4']
+    a = pd.merge(a,emas[i],on='date',how='outer')
     
     data.append(a)
     
