@@ -11,7 +11,7 @@ def daytype2number(x):
     }[x]
 
 
-# In[18]:
+# In[34]:
 
 import os
 import pickle
@@ -74,7 +74,12 @@ for subj in subjects:
         ems['date'] = np.arange(data.loc[0,0],data.loc[data.shape[0]-1,0])
         for (i,da) in enumerate(ems['date']):
             ems.loc[i,'duration'] = np.nanmean(data.loc[data[0]==da,3]-data.loc[data[0]==da,2])/1000.0
-            ems.loc[i,'quality'] = np.nanmean(data.loc[data[0]==da,5])
+            qual = np.array(data.loc[data[0]==da,5])
+            # if multiple entries, only take the first one
+            if qual.size>1:
+                ems.loc[i,'quality'] = qual[0]
+            else:
+                ems.loc[i,'quality'] = np.nanmean(qual)
             daytype = data.loc[data[0]==da,6]
             if daytype.size>0:
                 ems.loc[i,'daytype'] = daytype2number(daytype.values[0])
@@ -130,6 +135,11 @@ for (i,_) in enumerate(subjects):
     data.append(a)
     
 with open('data.dat','w') as f:
-    pickle.dump(data, f)
+    pickle.dump([data, subjects], f)
 f.close()
+
+
+# In[39]:
+
+len(data)
 

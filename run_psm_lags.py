@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[5]:
+# In[21]:
 
 import pickle
 import pandas as pd
@@ -13,7 +13,7 @@ with open('data_clean.dat') as f:
     data = pickle.load(f)
 f.close()
 
-n_boot = 100
+n_boot = 10
 
 ind_set = range(len(data))
 
@@ -84,7 +84,7 @@ for k in range(n_boot):
     
 
 
-# In[20]:
+# In[23]:
 
 import matplotlib.pyplot as plt
 get_ipython().magic(u'matplotlib inline')
@@ -93,6 +93,6 @@ plt.barh([0.75,1.75,2.75,3.75],np.mean(es_m2s_mean,axis=0),xerr=np.array([    [n
 plt.barh([1,2,3,4],np.mean(es_s2m_mean,axis=0),xerr=np.array([    [np.mean(es_s2m_mean[:,0])-np.percentile(es_s2m_mean[:,0],2.5),np.percentile(es_s2m_mean[:,0],97.5)-np.mean(es_s2m_mean[:,0])],    [np.mean(es_s2m_mean[:,1])-np.percentile(es_s2m_mean[:,1],2.5),np.percentile(es_s2m_mean[:,1],97.5)-np.mean(es_s2m_mean[:,1])],    [np.mean(es_s2m_mean[:,2])-np.percentile(es_s2m_mean[:,2],2.5),np.percentile(es_s2m_mean[:,2],97.5)-np.mean(es_s2m_mean[:,2])],    [np.mean(es_s2m_mean[:,3])-np.percentile(es_s2m_mean[:,3],2.5),np.percentile(es_s2m_mean[:,3],97.5)-np.mean(es_s2m_mean[:,3])]]).reshape(2,4),    ecolor=(0,0,0),height=.25,color=(.5,1,.5))
 plt.xlim([-.05,1])
 plt.yticks([1,2,3,4],['lag 0','lag 0,1','lag 0,1,2','lag 0,1,2,3'],rotation=0);
-plt.xlabel('Average Effect Size')
+plt.xlabel('Mean Personal Causal Effect')
 plt.legend(['Mood on Sleep Quality','Sleep Quality on Mood'],loc='upper right',bbox_to_anchor=(1.3, 1.05), fontsize=10);
 
