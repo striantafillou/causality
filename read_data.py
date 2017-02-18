@@ -11,7 +11,7 @@ def daytype2number(x):
     }[x]
 
 
-# In[34]:
+# In[42]:
 
 import os
 import pickle
@@ -108,16 +108,21 @@ for (i,_) in enumerate(subjects):
     a = pd.merge(a,acts[i],on='date',how='outer')
     
     # removing extra columns
-    emas[i] = emas[i].drop(['stress_prev','energy_prev','focus_prev'], axis=1)
     emss[i] = emss[i].drop(['duration_prev','daytype_prev'], axis=1)
     
     # delayed (-2)
     emas[i]['date'] += 1
     emss[i]['date'] += 1
-    emas[i].columns = ['date','mood_prev2']
+    acts[i]['date'] += 1
+    emas[i].columns = ['date','mood_prev2','stress_prev2','energy_prev2','focus_prev2']
     emss[i].columns = ['date','quality_prev2']
+    acts[i].columns = ['date','act_prev2']
     a = pd.merge(a,emas[i],on='date',how='outer')
     a = pd.merge(a,emss[i],on='date',how='outer')
+    a = pd.merge(a,acts[i],on='date',how='outer')
+    
+    # removing extra columns
+    emas[i] = emas[i].drop(['stress_prev2','energy_prev2','focus_prev2'], axis=1)
     
     # delayed (-3)
     emas[i]['date'] += 1

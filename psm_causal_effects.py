@@ -19,14 +19,6 @@ def psm_causal_effects(treatment, outcome, confound, graph=0, scorefun='replacem
     #binarizing the treatment
     treatment = 0*(treatment < np.mean(treatment)) + 1*(treatment >= np.mean(treatment))
 
-    #fitting on confounds
-    model = linear_model.LogisticRegression()
-
-    model.fit(confound, treatment)
-
-    #prediction
-    pscore = model.predict_proba(confound)[:,1]
-
     ind_case = np.where(treatment==1)[0]
     ind_control = np.where(treatment==0)[0]
 
@@ -37,6 +29,14 @@ def psm_causal_effects(treatment, outcome, confound, graph=0, scorefun='replacem
     
     else:
     
+        #fitting on confounds
+        model = linear_model.LogisticRegression()
+
+        model.fit(confound, treatment)
+
+        #prediction
+        pscore = model.predict_proba(confound)[:,1]
+        
         ind_matched_case = np.array([],dtype=int)
         ind_matched_control = np.array([],dtype=int)
 

@@ -26,8 +26,10 @@ for k in range(n_boot):
     
     inds = np.random.choice(ind_set, size=len(data), replace=True)
 
-    es_s2m = np.array([])
-    es_m2s = np.array([])
+    es_s2m_matched = np.array([])
+    es_m2s_matched = np.array([])
+    es_s2m_unmatched = np.array([])
+    es_m2s_unmatched = np.array([])
 #     es_a2s = np.array([])
     for i in inds:
 
@@ -35,7 +37,8 @@ for k in range(n_boot):
         treatment = np.array(data[i]['mood_prev'])
         outcome = np.array(data[i]['quality'])
         confound = np.array(pd.concat([data[i]['quality_prev'],data[i]['act_prev'],data[i]['stress_prev'],data[i]['energy_prev'],data[i]['daytype']],axis=1))
-        es_m2s = np.append(es_m2s,psm_causal_effects(treatment=treatment, outcome=outcome, confound=confound, scorefun='replacement'))
+        es_m2s_matched = np.append(es_m2s,psm_causal_effects(treatment=treatment, outcome=outcome, confound=confound, scorefun='replacement'))
+        es_m2s_unmatched = np.append(es_m2s,psm_causal_effects(treatment=treatment, outcome=outcome, confound=confound, scorefun='unmatched'))
         
 #         # activity on sleep
 #         treatment = np.array(data[i]['act_prev'], dtype=float)
@@ -47,7 +50,8 @@ for k in range(n_boot):
         treatment = np.array(data[i]['quality'])
         outcome = np.array(data[i]['mood'])
         confound = np.array(pd.concat([data[i]['mood_prev'],data[i]['quality_prev'],data[i]['stress_prev'],data[i]['energy_prev'],data[i]['daytype']],axis=1))
-        es_s2m = np.append(es_s2m,psm_causal_effects(treatment=treatment, outcome=outcome, confound=confound, scorefun='replacement'))
+        es_s2m_matched = np.append(es_s2m,psm_causal_effects(treatment=treatment, outcome=outcome, confound=confound, scorefun='replacement'))
+        es_s2m_unmatched = np.append(es_s2m,psm_causal_effects(treatment=treatment, outcome=outcome, confound=confound, scorefun='unmatched'))
         
     es_m2s_mean = np.append(es_m2s_mean, np.mean(es_m2s))
     es_s2m_mean = np.append(es_s2m_mean, np.mean(es_s2m))
