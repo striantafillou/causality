@@ -17,32 +17,33 @@ def psm_causal_effects(treatment, outcome, confound, graph=0, scorefun='replacem
         return np.nan
 
     #binarizing the treatment
-    treatment = 0*(treatment < np.mean(treatment)) + 1*(treatment >= np.mean(treatment))
+    treatment_bin = 0.0*(treatment < np.mean(treatment)) + 1.0*(treatment >= np.mean(treatment))
+    treatment_bin = treatment_bin.astype(float)
 
-    ind_case = np.where(treatment==1)[0]
-    ind_control = np.where(treatment==0)[0]
-
-    cnt_control = np.zeros(ind_control.size)
+    ind_case = np.where(treatment_bin==1)[0]
+    ind_control = np.where(treatment_bin==0)[0]
     
+#     print ind_case
+#     print ind_control
+
     if scorefun=='unmatched':
         
         ind_matched_case = ind_case
         ind_matched_control = ind_control
-        cnt_control = np.ones(ind_control.size)
     
     else:
     
         #fitting on confounds
         model = linear_model.LogisticRegression()
 
-        model.fit(confound, treatment)
+        model.fit(confound, treatment_bin)
 
         #prediction
         pscore = model.predict_proba(confound)[:,1]
         
         ind_matched_case = np.array([],dtype=int)
         ind_matched_control = np.array([],dtype=int)
-
+        
         for i_case in ind_case:
 
             #finding closest match in control
@@ -56,25 +57,28 @@ def psm_causal_effects(treatment, outcome, confound, graph=0, scorefun='replacem
             ind_matched_control = np.append(ind_matched_control,ind_control[ind])
             ind_matched_case = np.append(ind_matched_case,i_case)
             
-            # counter for how many times a control is used
-            cnt_control[ind] += 1
-
-            # if without replacement remove the used sample
+            # if no-replacement remove the used sample
             if scorefun=='noreplacement':
                 temp = list(ind_control)
-                if len(temp)>1:
-                    break
+#                 if len(temp)>1:
+#                     break
                 temp.remove(ind_control[ind])
                 ind_control = np.array(temp, dtype=int)
+                if ind_control.size==0:
+                    break
 
-    #std_pooled = np.var(outcome[ind_matched_case])*(ind_matched_case.size-1) + np.var(outcome[ind_matched_control])*(ind_matched_control.size-1)
-    #std_pooled /= (ind_matched_case.size+ind_matched_control.size-2)
-    #std_pooled = np.sqrt(std_pooled)
-    
-    # accounting for multiplicity in controls
-    ind_matched_control_uniq = np.unique(ind_matched_control)
-    std_pooled = np.var(outcome[ind_matched_case])/float(ind_matched_case.size) +        np.var(outcome[ind_matched_control_uniq])*np.sum(np.multiply(cnt_control,cnt_control))/float(np.sum(cnt_control)**2)
+    # estimate psm effect size
+    std_pooled = np.var(outcome[ind_matched_case])*(ind_matched_case.size-1) + np.var(outcome[ind_matched_control])*(ind_matched_control.size-1)
+    std_pooled /= (ind_matched_case.size+ind_matched_control.size-2)
     std_pooled = np.sqrt(std_pooled)
+    psm_es = (np.mean(outcome[ind_matched_case])-np.mean(outcome[ind_matched_control]))/std_pooled
+
+    # estimate regression coefficients
+#     treatment = treatment[np.concatenate((ind_matched_control, ind_matched_case),axis=0)]
+#     outcome = outcome[np.concatenate((ind_matched_control, ind_matched_case),axis=0)]
+#     regr = linear_model.LinearRegression()
+#     regr.fit(np.array(treatment).reshape(treatment.size,1), np.array(outcome).reshape(outcome.size,1))
     
-    return (np.mean(outcome[ind_matched_case])-np.mean(outcome[ind_matched_control]))/std_pooled
+    return psm_es
+#     return regr.coef_[0]
 
