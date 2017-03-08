@@ -6,7 +6,7 @@
 import numpy as np
 from sklearn import linear_model
 
-def psm_causal_effects(treatment, outcome, confound, graph=0, scorefun='replacement', caliper=0.2):
+def psm_causal_effects(treatment, outcome, confound, graph=0, scorefun='replacement', caliper=0.2, output='difference'):
     
     if treatment.size<20:
 #         print 'too few samples!'
@@ -67,18 +67,23 @@ def psm_causal_effects(treatment, outcome, confound, graph=0, scorefun='replacem
                 if ind_control.size==0:
                     break
 
-    # estimate psm effect size
-    std_pooled = np.var(outcome[ind_matched_case])*(ind_matched_case.size-1) + np.var(outcome[ind_matched_control])*(ind_matched_control.size-1)
-    std_pooled /= (ind_matched_case.size+ind_matched_control.size-2)
-    std_pooled = np.sqrt(std_pooled)
-    psm_es = (np.mean(outcome[ind_matched_case])-np.mean(outcome[ind_matched_control]))/std_pooled
-
-    # estimate regression coefficients
-#     treatment = treatment[np.concatenate((ind_matched_control, ind_matched_case),axis=0)]
-#     outcome = outcome[np.concatenate((ind_matched_control, ind_matched_case),axis=0)]
-#     regr = linear_model.LinearRegression()
-#     regr.fit(np.array(treatment).reshape(treatment.size,1), np.array(outcome).reshape(outcome.size,1))
+    if output=='difference':
+        # estimate psm effect size
+        std_pooled = np.var(outcome[ind_matched_case])*(ind_matched_case.size-1) + np.var(outcome[ind_matched_control])*(ind_matched_control.size-1)
+        std_pooled /= (ind_matched_case.size+ind_matched_control.size-2)
+        std_pooled = np.sqrt(std_pooled)
+        out = (np.mean(outcome[ind_matched_case])-np.mean(outcome[ind_matched_control]))/std_pooled
+    elif output=='linear':
+        # estimate regression coefficients
+#         print ind_matched_control.shape, ind_matched_case.shape
+        treatment = treatment.loc[np.concatenate((ind_matched_control, ind_matched_case))]
+        outcome = outcome.loc[np.concatenate((ind_matched_control, ind_matched_case))]
+        regr = linear_model.LinearRegression()
+        regr.fit(np.array(treatment).reshape(treatment.size,1), np.array(outcome).reshape(outcome.size,1))
+        out = regr.coef_
+    else:
+        print 'warning: unknown output type'
+        out = np.nan
     
-    return psm_es
-#     return regr.coef_[0]
+    return out
 

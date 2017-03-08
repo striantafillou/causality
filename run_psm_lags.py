@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[4]:
 
 import pickle
 import pandas as pd
@@ -14,7 +14,9 @@ with open('data.dat') as f:
     data, subjects = pickle.load(f)
 f.close()
 
-n_boot = 10
+n_boot = 100
+scorefunction = 'replacement'
+output = 'linear'
 
 ind_set = range(len(data))
 
@@ -49,27 +51,27 @@ for k in range(n_boot):
         treatment = 'mood_prev'
         outcome = 'quality'
         data_s = extract_remove_nans(data[i], [treatment]+[outcome])
-        es_m2s_um[c] = psm_causal_effects(treatment=data_s[treatment], outcome=data_s[outcome], confound=[], scorefun='unmatched')
+        es_m2s_um[c] = psm_causal_effects(treatment=data_s[treatment], outcome=data_s[outcome], confound=[], scorefun='unmatched', output=output)
         
         # mood on sleep - lag 0
         confound = ['dow', 'mean_temp_prev2', 'clear_prev2', 'act_prev2','daytype','stress_prev2','energy_prev2','focus_prev2']
         data_s = extract_remove_nans(data[i], [treatment]+[outcome]+confound)
-        es_m2s[c,0] = psm_causal_effects(treatment=data_s[treatment], outcome=data_s[outcome], confound=data_s[confound], scorefun='replacement')
+        es_m2s[c,0] = psm_causal_effects(treatment=data_s[treatment], outcome=data_s[outcome], confound=data_s[confound], scorefun=scorefunction, output=output)
         
         # mood on sleep - lag 1
         confound = ['dow', 'mean_temp_prev2', 'clear_prev2', 'act_prev2','daytype','stress_prev2','energy_prev2','focus_prev2','mood_prev2','quality_prev']
         data_s = extract_remove_nans(data[i], [treatment]+[outcome]+confound)
-        es_m2s[c,1] = psm_causal_effects(treatment=data_s[treatment], outcome=data_s[outcome], confound=data_s[confound], scorefun='replacement')
+        es_m2s[c,1] = psm_causal_effects(treatment=data_s[treatment], outcome=data_s[outcome], confound=data_s[confound], scorefun=scorefunction, output=output)
 
         # mood on sleep - lag 2
         confound = ['dow', 'mean_temp_prev2', 'clear_prev2', 'act_prev2','daytype','stress_prev2','energy_prev2','focus_prev2','mood_prev2','quality_prev','mood_prev3','quality_prev2']
         data_s = extract_remove_nans(data[i], [treatment]+[outcome]+confound)
-        es_m2s[c,2] = psm_causal_effects(treatment=data_s[treatment], outcome=data_s[outcome], confound=data_s[confound], scorefun='replacement')
+        es_m2s[c,2] = psm_causal_effects(treatment=data_s[treatment], outcome=data_s[outcome], confound=data_s[confound], scorefun=scorefunction, output=output)
 
         # mood on sleep - lag 3
         confound = ['dow', 'mean_temp_prev2', 'clear_prev2', 'act_prev2','daytype','stress_prev2','energy_prev2','focus_prev2','mood_prev2','quality_prev','mood_prev3','quality_prev2','mood_prev4','quality_prev3']
         data_s = extract_remove_nans(data[i], [treatment]+[outcome]+confound)
-        es_m2s[c,3] = psm_causal_effects(treatment=data_s[treatment], outcome=data_s[outcome], confound=data_s[confound], scorefun='replacement')
+        es_m2s[c,3] = psm_causal_effects(treatment=data_s[treatment], outcome=data_s[outcome], confound=data_s[confound], scorefun=scorefunction, output=output)
 
         ################ sleep on mood
         
@@ -77,27 +79,27 @@ for k in range(n_boot):
         treatment = 'quality'
         outcome = 'mood'
         data_s = extract_remove_nans(data[i], [treatment]+[outcome])
-        es_s2m_um[c] = psm_causal_effects(treatment=data_s[treatment], outcome=data_s[outcome], confound=[], scorefun='unmatched')
+        es_s2m_um[c] = psm_causal_effects(treatment=data_s[treatment], outcome=data_s[outcome], confound=[], scorefun='unmatched', output=output)
         
         # sleep on mood - lag 0
         confound = ['dow', 'mean_temp_prev', 'clear_prev', 'act_prev','daytype','stress_prev','energy_prev','focus_prev']
         data_s = extract_remove_nans(data[i], [treatment]+[outcome]+confound)
-        es_s2m[c,0] = psm_causal_effects(treatment=data_s[treatment], outcome=data_s[outcome], confound=data_s[confound], scorefun='replacement')
+        es_s2m[c,0] = psm_causal_effects(treatment=data_s[treatment], outcome=data_s[outcome], confound=data_s[confound], scorefun=scorefunction, output=output)
         
         # sleep on mood - lag 1
         confound = ['dow', 'mean_temp_prev', 'clear_prev','act_prev','daytype','stress_prev','energy_prev','focus_prev','mood_prev','quality_prev']
         data_s = extract_remove_nans(data[i], [treatment]+[outcome]+confound)
-        es_s2m[c,1] = psm_causal_effects(treatment=data_s[treatment], outcome=data_s[outcome], confound=data_s[confound], scorefun='replacement')
+        es_s2m[c,1] = psm_causal_effects(treatment=data_s[treatment], outcome=data_s[outcome], confound=data_s[confound], scorefun=scorefunction, output=output)
         
         # sleep on mood - lag 2
         confound = ['dow', 'mean_temp_prev', 'clear_prev','act_prev','daytype','stress_prev','energy_prev','focus_prev','mood_prev','quality_prev','mood_prev2','quality_prev2']
         data_s = extract_remove_nans(data[i], [treatment]+[outcome]+confound)
-        es_s2m[c,2] = psm_causal_effects(treatment=data_s[treatment], outcome=data_s[outcome], confound=data_s[confound], scorefun='replacement')
+        es_s2m[c,2] = psm_causal_effects(treatment=data_s[treatment], outcome=data_s[outcome], confound=data_s[confound], scorefun=scorefunction, output=output)
         
         # sleep on mood - lag 3
         confound = ['dow', 'mean_temp_prev', 'clear_prev','act_prev','daytype','stress_prev','energy_prev','focus_prev','mood_prev','quality_prev','mood_prev2','quality_prev2','mood_prev3','quality_prev3']
         data_s = extract_remove_nans(data[i], [treatment]+[outcome]+confound)
-        es_s2m[c,3] = psm_causal_effects(treatment=data_s[treatment], outcome=data_s[outcome], confound=data_s[confound], scorefun='replacement')
+        es_s2m[c,3] = psm_causal_effects(treatment=data_s[treatment], outcome=data_s[outcome], confound=data_s[confound], scorefun=scorefunction, output=output)
         
     es_m2s_mean[k,:] = np.nanmean(es_m2s, axis=0)
     es_s2m_mean[k,:] = np.nanmean(es_s2m, axis=0)
@@ -106,7 +108,7 @@ for k in range(n_boot):
     
 
 
-# In[19]:
+# In[3]:
 
 import matplotlib.pyplot as plt
 # from matplotlib import rc
@@ -128,7 +130,7 @@ plt.legend(['Mood on Sleep Quality','Sleep Quality on Mood'],loc='upper right',b
 plt.plot([1,1],[a[0],a[1]],'--',color=(0,0,0))
 
 
-# In[2]:
+# In[6]:
 
 import matplotlib.pyplot as plt
 # from matplotlib import rc
@@ -144,7 +146,7 @@ plt.bar([0,2,3,4,5],np.concatenate([np.array([np.mean(es_s2m_um_mean)]),np.mean(
 a = plt.ylim([0,1])
 plt.xlim([-.5,5.5])
 plt.xticks([0,2,3,4,5],['unmatched', 'T=0','T=1','T=2','T=3'],rotation=0);
-plt.ylabel('Mean Personal Causal Effect',fontsize=14)
+plt.ylabel('Mean Personal Slope',fontsize=14)
 plt.xlabel('lags 0 to T',fontsize=14)
 plt.legend(['Mood on Sleep Quality','Sleep Quality on Mood'],loc='upper right',bbox_to_anchor=(1, 1), fontsize=10);
 plt.plot([1,1],[a[0],a[1]],'--',color=(0,0,0))

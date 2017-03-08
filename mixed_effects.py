@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[95]:
+# In[5]:
 
 import statsmodels.api as sm 
 import statsmodels.formula.api as smf
@@ -17,7 +17,6 @@ f.close()
 
 # adding subject ids
 for i in range(len(data)):
-    #data[i]['subject'] = pd.Series(i+np.zeros(data[i].shape[0]), index=data[i].index, dtype=int)
     data[i]['subject'] = pd.Series(np.repeat(subjects[i],data[i].shape[0],axis=0), index=data[i].index, dtype=str)
 
 del subjects
@@ -27,7 +26,7 @@ data_all = pd.concat(data, axis=0)
 data_all = data_all.reset_index(drop=True)
 
 # keeping only relevant variables
-data_all = data_all[['subject','mood','quality','mood_prev']]
+data_all = data_all[['subject','mood','quality','mood_prev']]#,'stress_prev','daytype']]
 
 # removing nan rows
 data_all = data_all.dropna()
@@ -39,12 +38,7 @@ with open('../CS120/Assessment/assessment.dat') as f:
 f.close()
 
 
-# In[94]:
-
-len(data)
-
-
-# In[122]:
+# In[4]:
 
 import matplotlib.pyplot as plt
 get_ipython().magic(u'matplotlib inline')
@@ -59,7 +53,7 @@ plt.hist(RE,10);
 
 
 
-# In[127]:
+# In[5]:
 
 subjects = np.unique(data_all['subject'])
 plt.figure(figsize=[5,5])
@@ -72,16 +66,15 @@ for i, subj in enumerate(subjects):
     plt.plot(RE[i,1], np.nanmean(ass.loc[ind[i],'GAD7 W0']), '.', markersize=2, color=(0,0,0))
 
 
-# In[128]:
+# In[6]:
 
 md = smf.mixedlm('quality ~ mood_prev', data_all, groups=data_all['subject'], re_formula="~mood_prev")
 mdf = md.fit() 
 print mdf.summary()
 RE = np.array(mdf.random_effects)
-# plt.hist(RE,10);
 
 
-# In[133]:
+# In[7]:
 
 subjects = np.unique(data_all['subject'])
 plt.figure(figsize=[5,5])
@@ -97,7 +90,9 @@ for i, subj in enumerate(subjects):
     plt.plot(RE[i,1], np.nanmean(ass.loc[ind[i],'GAD7 W0']), '.', markersize=2, color=(0,0,0))
 
 
-# In[9]:
+# In[6]:
+
+# calculating personal model parameters
 
 betas_m2s = np.zeros([len(data),2])
 betas_s2m = np.zeros([len(data),2])
@@ -115,7 +110,7 @@ for iSubj in range(len(data)):
     
 
 
-# In[25]:
+# In[9]:
 
 md = smf.glm('quality ~ mood_prev', data_all)
 mdf = md.fit()
@@ -130,9 +125,10 @@ plt.xlabel('Mood')
 plt.ylabel('Sleep Quality')
 plt.xlim([0,8])
 plt.ylim([0,8])
+# plt.box()
 
 
-# In[54]:
+# In[10]:
 
 md = smf.glm('mood ~ quality', data_all)
 mdf = md.fit()
@@ -150,10 +146,14 @@ plt.ylim([0,8])
 
 
 
-# In[121]:
+# In[9]:
 
-ind1 = 49
-ind2 = 149
+from psm_causal_effects import psm_causal_effects
+import matplotlib.pyplot as plt
+get_ipython().magic(u'matplotlib inline')
+
+ind1 = 40
+ind2 = 140
 
 plt.figure(figsize=[5,5])
 plt.plot([0,8], [betas_s2m[ind1, 0],betas_s2m[ind1,0]+betas_s2m[ind1,1]*8], linewidth=1, alpha=.5, color=(0,0,1))
@@ -161,10 +161,9 @@ plt.plot([0,8], [betas_s2m[ind2, 0],betas_s2m[ind2,0]+betas_s2m[ind2,1]*8], line
 #plt.plot([0,8], [mdf.params[0],mdf.params[0]+mdf.params[1]*8], color=(.2,.2,.2), linewidth=1)
 
 data_2  = pd.concat([data[ind1], data[ind2]],axis=0)
-# keeping only relevant variables
-data_2 = data_2[['subject','mood','quality','mood_prev']]
+data_2 = data_2[['subject','mood','quality','mood_prev','daytype']]
 data_2 = data_2.dropna()
-data_2.reset_index(drop=True)
+data_2 = data_2.reset_index(drop=True)
 
 #pooled regression
 md = smf.glm('mood ~ quality', data_2)
@@ -172,12 +171,16 @@ mdf = md.fit()
 plt.plot([0,8], [mdf.params[0],mdf.params[0]+mdf.params[1]*8], color=(.2,.2,.2), linewidth=1, linestyle='--')
 
 #mixed linear models regression
-md = smf.mixedlm('quality ~ mood_prev', data_2, groups=data_2['subject'], re_formula="~mood_prev")
+# md = smf.mixedlm('quality ~ mood_prev', data_2, groups=data_2['subject'], re_formula="~mood_prev")
+md = smf.mixedlm('mood ~ quality', data_2, groups=data_2['subject'], re_formula="~quality")
 mdf = md.fit() 
 plt.plot([0,8], [mdf.params[0],mdf.params[0]+mdf.params[1]*8], color=(.2,.2,.2), linewidth=1)
 
+#psm
+# coef = psm_causal_effects(treatment=data_2['quality'], outcome=data_2['mood'], confound=['mood_prev','stress_prev','daytype'], scorefun='unmatched', output='linear')
+
 plt.xlabel('Sleep Quality')
-plt.ylabel('Mood')
+plt.ylabel('Next-day Mood')
 plt.xlim([0,8])
 plt.ylim([0,8])
 
@@ -185,6 +188,12 @@ plt.legend(['subject 1','subject 2','pooled','mixed'],bbox_to_anchor=(1.4, 1))
 
 plt.plot(data[ind1]['quality']+0.2*np.random.randn(data[ind1].shape[0]),data[ind1]['mood']+0.075*np.random.randn(data[ind1].shape[0]),'.',markersize=5,        color=(0,0,1),alpha=.5)
 plt.plot(data[ind2]['quality']+0.2*np.random.randn(data[ind2].shape[0]),data[ind2]['mood']+0.075*np.random.randn(data[ind2].shape[0]),'.',markersize=5,        color=(1,0,0),alpha=.5)
+# plt.box('off')
+
+
+# In[9]:
+
+coefs
 
 
 # In[63]:
