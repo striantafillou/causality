@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[4]:
+# In[3]:
 
 import pickle
 import pandas as pd
@@ -17,6 +17,7 @@ f.close()
 n_boot = 100
 scorefunction = 'replacement'
 output = 'linear'
+var_threshold = 0.5
 
 ind_set = range(len(data))
 
@@ -39,7 +40,7 @@ for k in range(n_boot):
     
     for (c,i) in enumerate(inds):
         
-        if np.nanstd(data[i]['mood'])<.25 or np.nanstd(data[i]['quality'])<.25:
+        if np.nanstd(data[i]['mood'])<var_threshold or np.nanstd(data[i]['quality'])<var_threshold:
             print 'skipping subject '+str(i)+' due to low variance in mood or sleep quality.'
             es_m2s_um[c] = np.nan
             es_m2s[c,:] = np.nan
@@ -111,9 +112,6 @@ for k in range(n_boot):
 # In[3]:
 
 import matplotlib.pyplot as plt
-# from matplotlib import rc
-# rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
-# rc('text', usetex=True)
 get_ipython().magic(u'matplotlib inline')
 
 plt.figure(figsize=(6,5))
@@ -130,12 +128,9 @@ plt.legend(['Mood on Sleep Quality','Sleep Quality on Mood'],loc='upper right',b
 plt.plot([1,1],[a[0],a[1]],'--',color=(0,0,0))
 
 
-# In[6]:
+# In[11]:
 
 import matplotlib.pyplot as plt
-# from matplotlib import rc
-# rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
-# rc('text', usetex=True)
 get_ipython().magic(u'matplotlib inline')
 
 plt.figure(figsize=(6,5))
@@ -143,11 +138,17 @@ yerrs = np.array([[np.mean(es_m2s_um_mean)-np.percentile(es_m2s_um_mean,2.5),np.
 plt.bar([-.25,1.75,2.75,3.75,4.75],np.concatenate([np.array([np.mean(es_m2s_um_mean)]),np.mean(es_m2s_mean,axis=0)],axis=0).reshape([5,1]),yerr=yerrs,    ecolor=(0,0,0),width=.25,color=(.5,.5,.8))
 yerrs = np.array([[np.mean(es_s2m_um_mean)-np.percentile(es_s2m_um_mean,2.5),np.mean(es_s2m_mean[:,0])-np.percentile(es_s2m_mean[:,0],2.5),    np.mean(es_s2m_mean[:,1])-np.percentile(es_s2m_mean[:,1],2.5),np.mean(es_s2m_mean[:,2])-np.percentile(es_s2m_mean[:,2],2.5),    np.mean(es_s2m_mean[:,3])-np.percentile(es_s2m_mean[:,3],2.5)],    [np.percentile(es_s2m_um_mean,97.5)-np.mean(es_s2m_um_mean),np.percentile(es_s2m_mean[:,0],97.5)-np.mean(es_s2m_mean[:,0]),    np.percentile(es_s2m_mean[:,1],97.5)-np.mean(es_s2m_mean[:,1]),np.percentile(es_s2m_mean[:,2],97.5)-np.mean(es_s2m_mean[:,2]),    np.percentile(es_s2m_mean[:,3],97.5)-np.mean(es_s2m_mean[:,3])]])
 plt.bar([0,2,3,4,5],np.concatenate([np.array([np.mean(es_s2m_um_mean)]),np.mean(es_s2m_mean,axis=0)],axis=0).reshape([5,1]),yerr=yerrs,    ecolor=(0,0,0),width=.25,color=(.5,.8,.5))
-a = plt.ylim([0,1])
+a = plt.ylim([-.1,1])
 plt.xlim([-.5,5.5])
 plt.xticks([0,2,3,4,5],['unmatched', 'T=0','T=1','T=2','T=3'],rotation=0);
 plt.ylabel('Mean Personal Slope',fontsize=14)
 plt.xlabel('lags 0 to T',fontsize=14)
 plt.legend(['Mood on Sleep Quality','Sleep Quality on Mood'],loc='upper right',bbox_to_anchor=(1, 1), fontsize=10);
 plt.plot([1,1],[a[0],a[1]],'--',color=(0,0,0))
+plt.plot([-.5,5.5],[0,0],':',color=(0,0,0))
+
+
+# In[14]:
+
+es_m2s_mean
 

@@ -5,8 +5,10 @@
 
 import numpy as np
 from sklearn import linear_model
+import statsmodels.formula.api as smf
+import pandas as pd
 
-def psm_causal_effects(treatment, outcome, confound, graph=0, scorefun='replacement', caliper=0.2, output='difference'):
+def psm_causal_effects(treatment, outcome, confound, graph=0, scorefun='replacement', caliper=0.2, output='difference', return_indices=False):
     
     if treatment.size<20:
 #         print 'too few samples!'
@@ -78,12 +80,19 @@ def psm_causal_effects(treatment, outcome, confound, graph=0, scorefun='replacem
 #         print ind_matched_control.shape, ind_matched_case.shape
         treatment = treatment.loc[np.concatenate((ind_matched_control, ind_matched_case))]
         outcome = outcome.loc[np.concatenate((ind_matched_control, ind_matched_case))]
-        regr = linear_model.LinearRegression()
-        regr.fit(np.array(treatment).reshape(treatment.size,1), np.array(outcome).reshape(outcome.size,1))
-        out = regr.coef_
+#         regr = linear_model.LinearRegression()
+#         regr.fit(np.array(treatment).reshape(treatment.size,1), np.array(outcome).reshape(outcome.size,1))
+#         out = regr.coef_
+        data = pd.DataFrame({'treatment': np.array(treatment), 'outcome': np.array(outcome)})
+        md = smf.glm('outcome ~ treatment', data)
+        mdf = md.fit()
+        out = mdf.params[1]
     else:
         print 'warning: unknown output type'
         out = np.nan
     
-    return out
+    if return_indices==True:
+        return out, ind_matched_case, ind_matched_control
+    else:
+        return out
 
