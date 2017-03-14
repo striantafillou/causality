@@ -1,16 +1,19 @@
 
 # coding: utf-8
 
-# In[35]:
+# In[72]:
 
 import numpy as np
 import pandas as pd
 import xgboost as xgb
 import pickle
 
-n_fold = 10
-xvars = ['quality','dow', 'act_prev','daytype','stress_prev','energy_prev','focus_prev','mood_prev','quality_prev','mood_prev2','quality_prev2','mood_prev3','quality_prev3']
+# params
+n_fold = 5
+# xvars = ['quality','dow', 'act_prev','daytype','stress_prev','energy_prev','focus_prev','mood_prev','quality_prev','mood_prev2','quality_prev2','mood_prev3','quality_prev3']
+xvars = ['quality','quality_prev','mood_prev']
 yvars = ['mood']
+
 # read data
 with open('data.dat') as f:
     data, subjects = pickle.load(f)
@@ -23,6 +26,10 @@ data_all = data_all.reset_index(drop=True)
 # data = data[:10]
 
 # personal analysis
+
+r2_train = np.array([])
+r2_test = np.array([])
+
 for i in range(len(data)):
     
     
@@ -31,18 +38,16 @@ for i in range(len(data)):
     data[i] = data[i].reset_index(drop=True)
     
     if data[i].shape[0]<20:
-        print 'skipping subjetc '+subjects[i]
+        print 'skipping subject '+subjects[i]
         continue
     
     x = data[i][xvars]
     y = data[i][yvars]
-
-    
     
     fold_size = np.floor(data[i].shape[0]/float(n_fold))
-#     print fold_size
     
-    r2 = np.zeros(n_fold)
+    r2_row_train = np.zeros([1,n_fold])
+    r2_row_test = np.zeros([1,n_fold])
     
     for j in range(n_fold):
         
@@ -59,13 +64,59 @@ for i in range(len(data)):
         ytrain = pd.concat([ytrain, y.loc[(j+1)*fold_size:]], axis=0)
         ytrain = ytrain.reset_index(drop=True)
         
-        gbm = xgb.XGBRegressor(max_depth=3, learning_rate=0.1, n_estimators=50, silent=True, objective='reg:linear', nthread=-1,                         gamma=0, min_child_weight=1, max_delta_step=0, subsample=0.25, colsample_bytree=1, colsample_bylevel=1,                         reg_alpha=0, reg_lambda=1, scale_pos_weight=1, base_score=0.5, seed=0, missing=None)
+        if np.var(np.array(ytrain))==0:
+            print 'skipping fold due to no variation in outcome'
+            r2_row_train[0,j] = np.nan
+            r2_row_test[0,j] = np.nan
+            continue
+        
+        gbm = xgb.XGBRegressor(max_depth=4, learning_rate=0.05, n_estimators=200, silent=True, objective='reg:linear', nthread=-1,                         gamma=0, min_child_weight=1, max_delta_step=0, subsample=1, colsample_bytree=1, colsample_bylevel=1,                         reg_alpha=0, reg_lambda=1, scale_pos_weight=1, base_score=0.5, seed=0, missing=None)
+        
         gbm.fit(xtrain, ytrain, eval_set=[(xtrain,ytrain),(xtest, ytest)], eval_metric='rmse', verbose=False)
-        ypred = gbm.predict(xtest)
         
-        r2[j] = 1 - np.sum(np.power(ypred-np.array(ytest),2))/np.sum(np.power(np.mean(ytrain)-ytest,2))
+        # training performance
+        ypred_train = gbm.predict(xtrain).reshape(xtrain.shape[0],1)
+        r2_row_train[0,j] = 1 - (np.sum(np.power(ypred_train-np.array(ytrain),2))/                                 np.sum(np.power(np.mean(np.array(ytrain))-np.array(ytrain),2)))
         
-    print i, np.mean(r2)
+        # test performance
+        ypred_test = gbm.predict(xtest).reshape(xtest.shape[0],1)
+        r2_row_test[0,j] = 1 - (np.sum(np.power(ypred_test-np.array(ytest),2))/                                np.sum(np.power(np.mean(np.array(ytrain))-np.array(ytest),2)))
+        
+    if r2_test.size==0:
+        r2_train = r2_row_train
+        r2_test = r2_row_test
+    else:
+        r2_train = np.append(r2_train, r2_row_train, axis=0)
+        r2_test = np.append(r2_test, r2_row_test, axis=0)
         
 # mixed analysis
+
+
+
+# In[65]:
+
+import matplotlib.pyplot as plt
+get_ipython().magic(u'matplotlib inline')
+
+print 'training mean R2 = {}'.format(np.nanmean(r2_train))
+print 'test mean R2 = {}'.format(np.nanmean(r2_test))
+
+bins = np.linspace(-3, 1, 100)
+plt.hist(r2_train.flatten(), bins, alpha=0.5, label='train');
+plt.hist(r2_test.flatten(), bins, alpha=0.5, label='test');
+plt.legend(loc='upper left')
+
+
+# In[82]:
+
+import matplotlib.pyplot as plt
+get_ipython().magic(u'matplotlib inline')
+
+print 'training mean R2 = {}'.format(np.nanmean(r2_train))
+print 'test mean R2 = {}'.format(np.nanmean(r2_test))
+
+bins = np.linspace(-3, 1, 100)
+plt.hist(r2_train.flatten()[~np.isnan(r2_train.flatten())], bins, alpha=0.5, label='train');
+plt.hist(r2_test.flatten()[~np.isnan(r2_test.flatten())], bins, alpha=0.5, label='test');
+plt.legend(loc='upper left')
 
