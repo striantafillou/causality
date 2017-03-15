@@ -8,7 +8,7 @@ from sklearn import linear_model
 import statsmodels.formula.api as smf
 import pandas as pd
 
-def psm_causal_effects(treatment, outcome, confound, graph=0, scorefun='replacement', caliper=0.2, output='difference', return_indices=False):
+def psm_causal_effects(treatment, outcome, confound, graph=0, scorefun='replacement', caliper=0.1, output='difference', return_indices=False):
     
     if treatment.size<20:
 #         print 'too few samples!'
