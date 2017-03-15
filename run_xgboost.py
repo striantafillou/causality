@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[72]:
+# In[101]:
 
 import numpy as np
 import pandas as pd
@@ -11,7 +11,8 @@ import pickle
 # params
 n_fold = 5
 # xvars = ['quality','dow', 'act_prev','daytype','stress_prev','energy_prev','focus_prev','mood_prev','quality_prev','mood_prev2','quality_prev2','mood_prev3','quality_prev3']
-xvars = ['quality','quality_prev','mood_prev']
+# xvars = ['quality','quality_prev','mood_prev','quality_prev2','mood_prev2']
+xvars = ['quality','quality_prev','mood_prev','quality_prev2','mood_prev2','act_prev','stress_prev','daytype']
 yvars = ['mood']
 
 # read data
@@ -70,7 +71,7 @@ for i in range(len(data)):
             r2_row_test[0,j] = np.nan
             continue
         
-        gbm = xgb.XGBRegressor(max_depth=4, learning_rate=0.05, n_estimators=200, silent=True, objective='reg:linear', nthread=-1,                         gamma=0, min_child_weight=1, max_delta_step=0, subsample=1, colsample_bytree=1, colsample_bylevel=1,                         reg_alpha=0, reg_lambda=1, scale_pos_weight=1, base_score=0.5, seed=0, missing=None)
+        gbm = xgb.XGBRegressor(max_depth=3, learning_rate=0.05, n_estimators=200, silent=True, objective='reg:linear', nthread=-1,                         gamma=0, min_child_weight=1, max_delta_step=0, subsample=0.25, colsample_bytree=0.25, colsample_bylevel=1,                         reg_alpha=0.7, reg_lambda=1, scale_pos_weight=1, base_score=0.5, seed=0, missing=None)
         
         gbm.fit(xtrain, ytrain, eval_set=[(xtrain,ytrain),(xtest, ytest)], eval_metric='rmse', verbose=False)
         
@@ -93,6 +94,8 @@ for i in range(len(data)):
 
 
 
+# ## Predict Mood from Sleep Quality
+
 # In[65]:
 
 import matplotlib.pyplot as plt
@@ -107,7 +110,89 @@ plt.hist(r2_test.flatten(), bins, alpha=0.5, label='test');
 plt.legend(loc='upper left')
 
 
+# ## Add Mood(t-1) and Quality(t-1)
+
 # In[82]:
+
+import matplotlib.pyplot as plt
+get_ipython().magic(u'matplotlib inline')
+
+print 'training mean R2 = {}'.format(np.nanmean(r2_train))
+print 'test mean R2 = {}'.format(np.nanmean(r2_test))
+
+bins = np.linspace(-3, 1, 100)
+plt.hist(r2_train.flatten()[~np.isnan(r2_train.flatten())], bins, alpha=0.5, label='train');
+plt.hist(r2_test.flatten()[~np.isnan(r2_test.flatten())], bins, alpha=0.5, label='test');
+plt.legend(loc='upper left')
+
+
+# ## Add Mood(t-2) and Quality(t-2)
+
+# In[84]:
+
+import matplotlib.pyplot as plt
+get_ipython().magic(u'matplotlib inline')
+
+print 'training mean R2 = {}'.format(np.nanmean(r2_train))
+print 'test mean R2 = {}'.format(np.nanmean(r2_test))
+
+bins = np.linspace(-3, 1, 100)
+plt.hist(r2_train.flatten()[~np.isnan(r2_train.flatten())], bins, alpha=0.5, label='train');
+plt.hist(r2_test.flatten()[~np.isnan(r2_test.flatten())], bins, alpha=0.5, label='test');
+plt.legend(loc='upper left')
+
+
+# ## Add Subsampling (0.5)
+
+# In[88]:
+
+import matplotlib.pyplot as plt
+get_ipython().magic(u'matplotlib inline')
+
+print 'training mean R2 = {}'.format(np.nanmean(r2_train))
+print 'test mean R2 = {}'.format(np.nanmean(r2_test))
+
+bins = np.linspace(-3, 1, 100)
+plt.hist(r2_train.flatten()[~np.isnan(r2_train.flatten())], bins, alpha=0.5, label='train');
+plt.hist(r2_test.flatten()[~np.isnan(r2_test.flatten())], bins, alpha=0.5, label='test');
+plt.legend(loc='upper left')
+
+
+# ## Add L1 Regularization (alpha=0.7)
+
+# In[98]:
+
+import matplotlib.pyplot as plt
+get_ipython().magic(u'matplotlib inline')
+
+print 'training mean R2 = {}'.format(np.nanmean(r2_train))
+print 'test mean R2 = {}'.format(np.nanmean(r2_test))
+
+bins = np.linspace(-3, 1, 100)
+plt.hist(r2_train.flatten()[~np.isnan(r2_train.flatten())], bins, alpha=0.5, label='train');
+plt.hist(r2_test.flatten()[~np.isnan(r2_test.flatten())], bins, alpha=0.5, label='test');
+plt.legend(loc='upper left')
+
+
+# ## Add Other Confounds
+
+# In[100]:
+
+import matplotlib.pyplot as plt
+get_ipython().magic(u'matplotlib inline')
+
+print 'training mean R2 = {}'.format(np.nanmean(r2_train))
+print 'test mean R2 = {}'.format(np.nanmean(r2_test))
+
+bins = np.linspace(-3, 1, 100)
+plt.hist(r2_train.flatten()[~np.isnan(r2_train.flatten())], bins, alpha=0.5, label='train');
+plt.hist(r2_test.flatten()[~np.isnan(r2_test.flatten())], bins, alpha=0.5, label='test');
+plt.legend(loc='upper left')
+
+
+# ## Heavier Regularization (Subsampling = 0.25)
+
+# In[102]:
 
 import matplotlib.pyplot as plt
 get_ipython().magic(u'matplotlib inline')
