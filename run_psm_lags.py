@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[3]:
+# In[5]:
 
 import pickle
 import pandas as pd
@@ -16,7 +16,7 @@ f.close()
 
 n_boot = 100
 scorefunction = 'replacement'
-output = 'linear'
+output = 'difference'
 var_threshold = 0.5
 
 ind_set = range(len(data))
@@ -109,7 +109,25 @@ for k in range(n_boot):
     
 
 
-# In[3]:
+# ## Group Difference
+
+# In[20]:
+
+## t-tests
+from scipy.stats import ttest_ind
+t,p = ttest_ind(es_m2s_um_mean, es_s2m_um_mean, equal_var=False, axis=0)
+print 'T,P = ',t,p
+t,p = ttest_ind(es_m2s_mean[:,0], es_s2m_mean[:,0], equal_var=False)
+print 'T,P = ',t,p
+t,p = ttest_ind(es_m2s_mean[:,1], es_s2m_mean[:,1], equal_var=False)
+print 'T,P = ',t,p
+t,p = ttest_ind(es_m2s_mean[:,2], es_s2m_mean[:,2], equal_var=False)
+print 'T,P = ',t,p
+t,p = ttest_ind(es_m2s_mean[:,3], es_s2m_mean[:,3], equal_var=False)
+print 'T,P = ',t,p
+
+
+# In[38]:
 
 import matplotlib.pyplot as plt
 get_ipython().magic(u'matplotlib inline')
@@ -119,14 +137,21 @@ yerrs = np.array([[np.mean(es_m2s_um_mean)-np.percentile(es_m2s_um_mean,2.5),np.
 plt.bar([-.25,1.75,2.75,3.75,4.75],np.concatenate([np.array([np.mean(es_m2s_um_mean)]),np.mean(es_m2s_mean,axis=0)],axis=0).reshape([5,1]),yerr=yerrs,    ecolor=(0,0,0),width=.25,color=(.5,.5,.8))
 yerrs = np.array([[np.mean(es_s2m_um_mean)-np.percentile(es_s2m_um_mean,2.5),np.mean(es_s2m_mean[:,0])-np.percentile(es_s2m_mean[:,0],2.5),    np.mean(es_s2m_mean[:,1])-np.percentile(es_s2m_mean[:,1],2.5),np.mean(es_s2m_mean[:,2])-np.percentile(es_s2m_mean[:,2],2.5),    np.mean(es_s2m_mean[:,3])-np.percentile(es_s2m_mean[:,3],2.5)],    [np.percentile(es_s2m_um_mean,97.5)-np.mean(es_s2m_um_mean),np.percentile(es_s2m_mean[:,0],97.5)-np.mean(es_s2m_mean[:,0]),    np.percentile(es_s2m_mean[:,1],97.5)-np.mean(es_s2m_mean[:,1]),np.percentile(es_s2m_mean[:,2],97.5)-np.mean(es_s2m_mean[:,2]),    np.percentile(es_s2m_mean[:,3],97.5)-np.mean(es_s2m_mean[:,3])]])
 plt.bar([0,2,3,4,5],np.concatenate([np.array([np.mean(es_s2m_um_mean)]),np.mean(es_s2m_mean,axis=0)],axis=0).reshape([5,1]),yerr=yerrs,    ecolor=(0,0,0),width=.25,color=(.5,.8,.5))
+plt.text(-.2, .79, '***', fontsize=14)
+plt.text(1.8, .74, '***', fontsize=14)
+plt.text(2.8, .76, '***', fontsize=14)
+plt.text(3.8, .77, '***', fontsize=14)
+plt.text(4.8, .86, '***', fontsize=14)
 a = plt.ylim([0,1])
 plt.xlim([-.5,5.5])
 plt.xticks([0,2,3,4,5],['unmatched', 'T=0','T=1','T=2','T=3'],rotation=0);
 plt.ylabel('Mean Personal Causal Effect',fontsize=14)
 plt.xlabel('lags 0 to T',fontsize=14)
-plt.legend(['Mood on Sleep Quality','Sleep Quality on Mood'],loc='upper right',bbox_to_anchor=(1, 1), fontsize=10);
+plt.legend(['Mood on Sleep Quality','Sleep Quality on Mood'],loc='upper right',bbox_to_anchor=(.5, 1), fontsize=10);
 plt.plot([1,1],[a[0],a[1]],'--',color=(0,0,0))
 
+
+# ## Linear Output
 
 # In[11]:
 
@@ -148,7 +173,7 @@ plt.plot([1,1],[a[0],a[1]],'--',color=(0,0,0))
 plt.plot([-.5,5.5],[0,0],':',color=(0,0,0))
 
 
-# In[14]:
+# In[11]:
 
-es_m2s_mean
+es_m2s_mean.shape
 

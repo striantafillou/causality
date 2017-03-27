@@ -61,7 +61,7 @@ for iSubj in range(len(data)):
 
 # ### Personal + Global (effect of mood on sleep)
 
-# In[74]:
+# In[106]:
 
 from scipy.stats.stats import pearsonr
 
@@ -72,9 +72,9 @@ print pearsonr(data_all['mood_prev'],data_all['quality'])
 
 plt.figure(figsize=[5,5])
 for iSubj in range(len(data)):
-    plt.plot([0,8.2], [betas_m2s[iSubj, 0],betas_m2s[iSubj,0]+betas_m2s[iSubj,1]*8.2], linewidth=.3, alpha=.5)
+    plt.plot([0,8.2], [betas_m2s[iSubj, 0],betas_m2s[iSubj,0]+betas_m2s[iSubj,1]*8.2], linewidth=.3, alpha=.75)
 plt.plot([0,8.2], [mdf.params[0],mdf.params[0]+mdf.params[1]*8.2], color=(.2, .2,.2), linewidth=3, alpha=1)
-plt.plot(data_all['mood_prev']+0.075*np.random.randn(data_all.shape[0]),data_all['quality']+0.2*np.random.randn(data_all.shape[0]),'.',markersize=2,        color=(0,0,0),alpha=.5)
+plt.plot(data_all['mood_prev']+0.075*np.random.randn(data_all.shape[0]),data_all['quality']+0.2*np.random.randn(data_all.shape[0]),'.',markersize=2,        color=(0,0,0),alpha=.3)
 plt.xlabel('Previous-day Mood',fontsize=14)
 plt.ylabel('Sleep Quality',fontsize=14)
 plt.xlim([0,8.2])
@@ -99,7 +99,7 @@ plt.text(8.3,6.4,'y = {:.2}x + {:.3}'.format(mdf.params[1],mdf.params[0]),fontsi
 
 # ### Personal + Global (effect of sleep on mood)
 
-# In[76]:
+# In[107]:
 
 from scipy.stats.stats import pearsonr
 
@@ -110,9 +110,9 @@ print pearsonr(data_all['quality'],data_all['mood'])
 
 plt.figure(figsize=[5,5])
 for iSubj in range(len(data)):
-    plt.plot([0,8.2], [betas_s2m[iSubj, 0],betas_s2m[iSubj,0]+betas_s2m[iSubj,1]*8.2], linewidth=.3, alpha=.5)
+    plt.plot([0,8.2], [betas_s2m[iSubj, 0],betas_s2m[iSubj,0]+betas_s2m[iSubj,1]*8.2], linewidth=.3, alpha=.75)
 plt.plot([0,8.2], [mdf.params[0],mdf.params[0]+mdf.params[1]*8.2], color=(.2,.2,.2), linewidth=3)
-plt.plot(data_all['quality']+0.2*np.random.randn(data_all.shape[0]),data_all['mood']+0.075*np.random.randn(data_all.shape[0]),'.',markersize=2,        color=(0,0,0),alpha=.5)
+plt.plot(data_all['quality']+0.2*np.random.randn(data_all.shape[0]),data_all['mood']+0.075*np.random.randn(data_all.shape[0]),'.',markersize=2,        color=(0,0,0),alpha=.3)
 plt.xlabel('Sleep Quality',fontsize=14)
 plt.ylabel('Next-day Mood',fontsize=14)
 plt.xlim([0,8.2])
