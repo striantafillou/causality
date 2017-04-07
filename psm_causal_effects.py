@@ -15,7 +15,7 @@ def psm_causal_effects(treatment, outcome, confound, graph=0, scorefun='replacem
         return np.nan
 
     if np.var(treatment)==0:
-        print 'treatment has no variability'
+        print('treatment has no variability')
         return np.nan
 
     #binarizing the treatment
@@ -88,7 +88,7 @@ def psm_causal_effects(treatment, outcome, confound, graph=0, scorefun='replacem
         mdf = md.fit()
         out = mdf.params[1]
     else:
-        print 'warning: unknown output type'
+        print('warning: unknown output type')
         out = np.nan
     
     if return_indices==True:
